@@ -81,50 +81,38 @@ routercarrito.post('/', async(req, res) => {
     let producto, productos1;
     let datos = req.body;
     // return res.render('./views/productos',{productos: producto});
-    if(administrador){
-        producto=await contenedorProductos.getById(parseInt(datos.id));
-        if(producto!='Id especificado no existe en el archivo'){
-            let data ={
-                timestamp: Date.now(),
-                productos:producto
-            }
-            await contenedorProductosCarro.save(data);
-            productos1=await contenedorProductosCarro.getAll();
-            return res.render('./views/productos_carro',{productos: producto});
+    producto=await contenedorProductos.getById(parseInt(datos.id));
+    if(producto!='Id especificado no existe en el archivo'){
+        let data ={
+            timestamp: Date.now(),
+            productos:producto
         }
-        
-    }else{
-        res.send({error:-1,descripcion: "ruta /api/productos/ metodo POST no autorizado"});
+        await contenedorProductosCarro.save(data);
+        productos1=await contenedorProductosCarro.getAll();
+        return res.render('./views/productos_carro',{productos: producto});
     }
 })
 
 routercarrito.delete('/:id',async(req, res) => {
-    if(administrador){
-        const {id} = req.params;
-        await contenedorProductosCarro.deleteById(Number(id))
-        res.render( './views/productos', {productos:await contenedorProductosCarro.getAll()});
-    }else{
-        res.send({error:-1,descripcion: "ruta /api/productos/:id metodo DELETE no autorizado"});
-    }
+
+    const {id} = req.params;
+    await contenedorProductosCarro.deleteById(Number(id))
+    res.render( './views/productos', {productos:await contenedorProductosCarro.getAll()});
 })
 
 
 routercarrito.put('/:id', async (req, res) => {
     let producto;
-    if(administrador){
-        const { id } = req.params
-        let datos = req.body;
-        producto=await contenedorProductos.getById(parseInt(datos.idProducto));
-        if(producto!='Id especificado no existe en el archivo'){
-            let data ={
-                timestamp: Date.now(),
-                productos:producto,
-                id:Number(id)
-            }
-            res.send(await contenedorProductosCarro.putId(id,data));
+    const { id } = req.params
+    let datos = req.body;
+    producto=await contenedorProductos.getById(parseInt(datos.idProducto));
+    if(producto!='Id especificado no existe en el archivo'){
+        let data ={
+            timestamp: Date.now(),
+            productos:producto,
+            id:Number(id)
         }
-    }else{
-        res.send({error:-1,descripcion: "ruta /api/productos/:id metodo PUT no autorizado"});
+        res.send(await contenedorProductosCarro.putId(id,data));
     }
 })
 

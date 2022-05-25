@@ -13,9 +13,6 @@ form1.addEventListener('submit', e => {
         body: JSON.stringify(data)
     })
     let myBool = (document.getElementById('admin2').value === 'false');
-    if(myBool){
-        alert("¡No tiene permisos de Administrador para Agregar productos al carrito!");
-    }
     setTimeout(() => {
         window.location.reload()
     }, 1000);
@@ -33,9 +30,6 @@ botonesEliminarc.forEach((boton, indice) => {
             method: 'DELETE'
         })
         let myBool = (document.getElementById('admin2').value === 'false');
-        if(myBool){
-            alert("¡No tiene permisos de Administrador para Eliminar productos del carrito!");
-        }
         window.location.reload();
     });
 });
@@ -65,10 +59,6 @@ botonesEditarc.forEach((boton, indice) => {
                     method: 'PUT',
                     body: JSON.stringify(data)
                 })
-                let myBool = (document.getElementById('admin2').value === 'false');
-                if(myBool){
-                    alert("¡No tiene permisos de Administrador para Editar productos del carrito!");
-                }
                 setTimeout(() => {
                     window.location.reload()
                 }, 600);
