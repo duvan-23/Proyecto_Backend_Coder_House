@@ -43,6 +43,8 @@ routerProductos.get('/:id?', async(req, res) => {
 routerProductos.post('/', async(req, res) => {
     if(administrador){
         await contenedorProductos.save(req.body);
+        let productos1=await contenedorProductos.getAll();
+        return res.render( './views/productos', {productos:productos1});
     }else{
         res.send({error:-1,descripcion: "ruta /api/productos/ metodo POST no autorizado"});
     }
@@ -70,26 +72,47 @@ routerProductos.put('/:id', async (req, res) => {
 
 //-------------carrito-------------
 routercarrito.get('/', async(req, res) => {
-    let productos1=await contenedorProductosCarro.getAll();
-    if(productos1!=""){
-        productos1[0].admin=administrador;
-    }
-    return res.render( './views/productos_carro', {productos:productos1});
+    let carritos=await contenedorProductosCarro.getAll();
+    return res.render( './views/productos_carro', {carritos:carritos});
+})
+
+routercarrito.get('/:id/productos', async (req, res) => {
+    const { id } = req.params;
+    let productos;
+    let datoCarrito = req.query.id_carro;
+    productos=await contenedorProductosCarro.getById(parseInt(id));
+    let carritos=await contenedorProductosCarro.getAll();
+    return res.render( './views/productos_carro', {carritos:carritos,productos:productos.productos,idcarrito:datoCarrito});
 })
 
 routercarrito.post('/', async(req, res) => {
     let producto, productos1;
-    let datos = req.body;
     // return res.render('./views/productos',{productos: producto});
-    producto=await contenedorProductos.getById(parseInt(datos.id));
+    producto=[];
+
+    let data ={
+        timestamp: Date.now(),
+        productos:producto
+    }
+    await contenedorProductosCarro.save(data);
+    carritos=await contenedorProductosCarro.getAll();
+    return res.render('./views/productos_carro',{carritos: carritos});
+})
+routercarrito.post('/:id/productos', async(req, res) => {
+    let producto, productos1;
+    const { id } = req.params;
+    let datos = req.body;
+    let datoCarrito = req.query.id_carro;
+    // return res.render('./views/productos',{productos: producto});
+    producto=await contenedorProductos.getById(parseInt(id));
+
     if(producto!='Id especificado no existe en el archivo'){
-        let data ={
-            timestamp: Date.now(),
-            productos:producto
-        }
-        await contenedorProductosCarro.save(data);
-        productos1=await contenedorProductosCarro.getAll();
-        return res.render('./views/productos_carro',{productos: producto});
+        producto.id_producto=producto.id;
+        delete producto.id;
+        await contenedorProductosCarro.saveCarrito(producto, datos.id);
+        carritos=await contenedorProductosCarro.getAll();
+        productos1=await contenedorProductosCarro.getById(parseInt(datos.id));
+        return res.render('./views/productos_carro',{carritos: carritos,productos:productos1,idcarrito:datoCarrito});
     }
 })
 
@@ -100,19 +123,25 @@ routercarrito.delete('/:id',async(req, res) => {
     res.render( './views/productos', {productos:await contenedorProductosCarro.getAll()});
 })
 
+routercarrito.delete('/:id/productos/:id_prod',async(req, res) => {
 
-routercarrito.put('/:id', async (req, res) => {
+    const {id} = req.params;
+    const {id_prod} = req.params;
+    await contenedorProductosCarro.deleteByIdCarrito(Number(id), Number(id_prod))
+    res.render( './views/productos', {productos:await contenedorProductosCarro.getAll()});
+})
+
+
+routercarrito.put('/:id/productos/:id_prod', async (req, res) => {
     let producto;
-    const { id } = req.params
+    const { id, id_prod } = req.params;
     let datos = req.body;
     producto=await contenedorProductos.getById(parseInt(datos.idProducto));
     if(producto!='Id especificado no existe en el archivo'){
-        let data ={
-            timestamp: Date.now(),
-            productos:producto,
-            id:Number(id)
-        }
-        res.send(await contenedorProductosCarro.putId(id,data));
+        producto.id_producto=producto.id;
+        delete producto.id;
+        producto.id=Number(id);
+        res.send(await contenedorProductosCarro.putIdCarrito(id,producto,id_prod));
     }
 })
 
